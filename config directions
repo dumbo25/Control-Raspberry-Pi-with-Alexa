@@ -1,21 +1,19 @@
 Directions for v0.3.5 of fauxmo from https://pydigger.com/pypi/fauxmo
 
+with some edits ...
+
 Configuration
 -------------
 
-I recommend that you copy and modify
-```config-sample.json`` <https://github.com/n8henrie/fauxmo/blob/master/config-sample.json>`__.
-Fauxmo will use whatever config file you specify with ``-c`` or will
-search for ``config.json`` in the current directory, ``~/.fauxmo/``, and
-``/etc/fauxmo/`` (in that order). The minimal configuration settings
-are:
+Copy config-sample.json to config.json
+Edit config.json
 
--  ``FAUXMO``: General Fauxmo settings
+The minimal configuration settings are:
 
-   -  ``ip_address``: Optional[str] - Manually set the server’s IP
-      address. Recommended value: ``"auto"``.
+``FAUXMO``: General Fauxmo settings
+  - ``ip_address``: Optional[str] - Manually set the server’s IP address. Recommended value: ``"auto"``.
 
--  ``PLUGINS``: Top level key for your plugins, values should be a
+``PLUGINS``: Top level key for your plugins, values should be a
    dictionary of (likely CamelCase) class names, spelled identically to
    the plugin class, with each plugin’s settings as a subdictionary.
 
