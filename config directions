@@ -1,6 +1,4 @@
-Directions for v0.3.5 of fauxmo from https://pydigger.com/pypi/fauxmo
-
-with some edits ...
+Directions for v0.3.5 of fauxmo config.json drawn from various sources
 
 Configuration
 -------------
@@ -10,14 +8,16 @@ Edit config.json
 
 The minimal configuration settings are:
 
-``FAUXMO``: General Fauxmo settings
-  - ``ip_address``: Optional[str] - Manually set the server’s IP address. Recommended value: ``"auto"``.
+  "FAUXMO": General Fauxmo settings
+    - "ip_address": Server’s IP address or "auto"
 
-``PLUGINS``: Top level key for your plugins, values should be a
-   dictionary of (likely CamelCase) class names, spelled identically to
-   the plugin class, with each plugin’s settings as a subdictionary.
+  "DEVICES": 
+  
+  "PLUGINS: Top level key for your plugins, values should be a
+  dictionary of (likely CamelCase) class names, spelled identically to
+  the plugin class, with each plugin’s settings as a subdictionary.
 
-   -  ``ExamplePlugin``: Your plugin class name here, case sensitive.
+    - "ExamplePlugin": Your plugin class name here, case sensitive.
 
       -  ``path``: The absolute path to the Python file in which the
          plugin class is defined (please see the section on user plugins
