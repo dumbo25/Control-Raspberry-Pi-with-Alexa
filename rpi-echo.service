@@ -1,0 +1,17 @@
+[Unit]
+Description=control raspberry pi via Amazon Alexa
+After=meadiacenter.service
+
+[Service]
+# If User and Group are not specified, then by default systemd ExecStart runs as root
+User=root
+Group=root
+Type=simple
+ExecStart=/usr/bin/python /home/pi/rpi-echo/rpi-echo.py
+# write to journal or within script to separate log file
+# StandardOutput=/home/osmc/run-fan.log
+# StandardError=/home/osmc/run-fan.log
+Restart=Always
+
+[Install]
+WantedBy=multi-user.target
