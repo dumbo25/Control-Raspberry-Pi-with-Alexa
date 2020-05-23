@@ -108,7 +108,7 @@ class upnp_device(object):
             except:
                 upnp_device.this_host_ip = '127.0.0.1'
             del(temp_socket)
-            Log.printMsg("got local address of " + str(upnp_device.this_host_ip))
+            Log.printMsg("WeMo server address: " + str(upnp_device.this_host_ip))
         return upnp_device.this_host_ip
 
 
@@ -199,7 +199,7 @@ class fauxmo(upnp_device):
             self.action_handler = action_handler
         else:
             self.action_handler = self
-        Log.printMsg("FauxMo device " + self.name + "ready on " + str(self.ip_address) + ":" + str(self.port))
+        Log.printMsg("FauxMo device: " + self.name + " ready on " + str(self.ip_address) + ":" + str(self.port))
 
     def get_name(self):
         return self.name
@@ -225,11 +225,13 @@ class fauxmo(upnp_device):
             if data.find('<BinaryState>1</BinaryState>') != -1:
                 # on
                 Log.printMsg("Responding to ON for " + self.name)
-                success = self.action_handler.on(client_address[0], self.name)
+                # success = self.action_handler.on(client_address[0], self.name)
+                success = self.action_handler.on(client_address[0], 'ON')
             elif data.find('<BinaryState>0</BinaryState>') != -1:
                 # off
                 Log.printMsg("Responding to OFF for " + self.name)
-                success = self.action_handler.off(client_address[0], self.name)
+                # success = self.action_handler.off(client_address[0], self.name)
+                success = self.action_handler.off(client_address[0], 'OFF')
             else:
                 Log.printMsg("Unknown Binary State request:")
                 log.printMsg(str(data))
@@ -289,20 +291,22 @@ class upnp_broadcast_responder(object):
             try:
                 self.ssock.bind(('',self.port))
             except Exception, e:
-                Log.printMsg("WARNING: Failed to bind " + str(self.ip) + ":" + str(self.port) + ":" + e)
+                Log.printMsg("*** ERROR: Failed to bind " + str(self.ip) + ":" + str(self.port) + ":" + str(e))
                 ok = False
 
             try:
                 self.ssock.setsockopt(socket.IPPROTO_IP,socket.IP_ADD_MEMBERSHIP,self.mreq)
             except Exception, e:
-                Log.printMsg('WARNING: Failed to join multicast group: ' + e)
+                Log.printMsg('*** ERROR: Failed to join multicast group: ' + str(e))
                 ok = False
 
         except Exception, e:
-            Log.printMsg("Failed to initialize UPnP sockets: " + e)
+            Log.printMsg("*** ERROR: Failed to initialize UPnP sockets: " + str(e))
             return False
         if ok:
             Log.printMsg("Listening for UPnP broadcasts")
+        else:
+            exit()
 
     def fileno(self):
         return self.ssock.fileno()
