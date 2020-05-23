@@ -47,6 +47,96 @@ Log.setDebug(True)
 
 
 def getLogHandler():
+#!/usr/bin/env python
+
+#########################
+#
+# Python script using Amazon Alexa or Echo to control Raspberry Pi using an older version 
+# fauxmo. It only supports one device and two commands.
+#
+# To control a device say:
+#
+#   Alexa, turn <device> <command>
+#
+# The scripts here are based on this Instructable
+#   https://www.instructables.com/id/Control-Raspberry-Pi-GPIO-Using-Amazon-Echo-Fauxmo/
+#
+# The script can be run on the command or as a systemd servioce:
+# To run the script from the command line use:
+#
+#    $ python rpi-echo.py
+#
+# Once the script is running, say to Amazon Alexa: Alexa, discover devices
+#
+#    $ ps aux | grep rpi-echo
+#
+#    should show two entries for rpi-echo, one is the command above and the other is the script
+#
+# Wait for dsicovery to complete
+#
+# If a mistake is made, then delete discovered devices from Alexa app on smartphone
+#
+# MAKE THE CHANGES IS INDICATED IN THE CODE BELOW
+#
+# Nothing else needs to be added to this script or any of the others
+#
+# be sure to rm *.pyc if any changes are made
+#
+#########################
+
+#########################
+# the following lines must go here, otherwise fauxmo does not initialize properly
+import mylog
+global Log
+Log = mylog.mylog('/home/pi', 'rpi-echo.log')
+mylog.setLogObject(Log)
+
+import fauxmo
+import time
+import datetime
+import subprocess
+
+# set to True when debugging, otherwise set to False
+Log.setDebug(False)
+
+#   Starting port, which should be greater than 1024. Each command requires a unique port
+#   The starting port doesn't need to be changed
+startingPort = 5070
+
+
+
+# THE BELOW ITEMS SHOULD BE THE ONLY CHANGES REQUIRED
+
+#   Enter your device name for Alex/Echo
+device = ['security']
+
+#   These are the actions to be taken when the echo command is received
+#
+#   The number of actions must equal the number of commands
+#
+#   An action is any command that can be executed from the command line
+#   example actions:
+#      sudo shutdown -h 0
+#      sudo reboot
+#      python script.py
+actions = ['python /usr/local/bin/sleep.py', 'python /usr/local/bin/disarm.py']
+
+# THE ABOVE ITEMS SHOULD BE THE ONLY CHANGES REQUIRED
+
+
+# I modified these lines in fauxmo.py, which hard codes ON and OFF.
+# The commented lines are the originals.
+#   # success = self.action_handler.on(client_address[0], self.name)
+#   success = self.action_handler.on(client_address[0], 'ON')
+#
+#   # success = self.action_handler.off(client_address[0], self.name)
+#   success = self.action_handler.off(client_address[0], 'OFF')
+#
+# If the commands are changed, then you must change fuaxmo.py
+commands = ['ON', 'OFF']
+
+#########################
+def getLogHandler():
     return Log
 
 class debounce_handler(object):
@@ -83,50 +173,58 @@ class device_handler(debounce_handler):
         Log.printMsg('trigger: port: ' + str(port) )
 
     def act(self, client_address, state, name):
-        if name == "home hub on":
-            # Alexa, turn on home hub; or Alexa, turn home hub on
-            Log.printMsg("act: on " + name + " from client @ " + str(client_address))
-        elif name == "home hub off":
-            # Alexa, turn off home hub; or Alexa, turn home hub off
-            Log.printMsg("act: off " + name + " from client @ " + str(client_address))
-        elif name == "home hub shutdown":
-            # Alexa, turn on home hub shutdown
-            Log.printMsg("act: shutdown " + name + " from client @ " + str(client_address))
-            cmd = "sudo shutdown -h 0"
-            subprocess.call(cmd, shell=True)
-        elif name == "home hub restart":
-            # Alexa, turn on home hub restart
-            Log.printMsg("act: reboot " + name + " from client @ " + str(client_address))
-            cmd = "sudo reboot"
-            subprocess.call(cmd, shell=True)
-        else:
+        global commands
+	global actions
+
+	notFound = True
+
+        try:
+            i = 0
+            for cmd in commands:
+                if name == cmd:
+                    Log.printMsg("action: " + name + " from Echo " + str(client_address))
+		    subprocess.call(actions[i], shell=True)
+                    notFound = False
+                i = i + 1
+	except:
+            Log.printMsg("rpi-echo: device_handler: act: try failed: " + name)
+
+        if notFound:
             Log.printMsg("unhandled command received: " + name)
         return True
 
-
 if __name__ == "__main__":
-    Log.printMsg("Stating wemo server")
-    p = fauxmo.poller()
-    u = fauxmo.upnp_broadcast_responder()
-    u.init_socket()
-    p.add(u)
+    Log.printMsg("*** STARTING WEMO SERVER ***")
 
-    # Register the device callback as a fauxmo handler
+    # setup parameters for fauxmo
+    #   Plug-and-Play Listener
+    l = fauxmo.upnp_broadcast_responder()
+    l.init_socket()
+
+    #   Poller
+    p = fauxmo.poller()
+    p.add(l)
+
+    #   Register the device callback for handler
     d = device_handler()
 
-    # Name the device and the action and unique port
-    fauxmo.fauxmo("home hub on", u, p, None, 5001, d)
-    fauxmo.fauxmo("home hub off", u, p, None, 5002, d)
-    fauxmo.fauxmo("home hub shutdown", u, p, None, 5003, d)
-    fauxmo.fauxmo("home hub restart", u, p, None, 5004, d)
 
-    # Loop and poll for incoming Echo requests
-    Log.printMsg("Entering wemo polling loop")
+    # Name the device
+    #   fauxmo.fauxmo corresponds to fauxmo.py: fauxmo: __init__
+    port = startingPort
+    for dev in device:
+        fauxmo.fauxmo(dev, l, p, None, port, d)
+        port = port + 1
+
+
+    # Loop forever waiting for incoming Echo requests
+    Log.printMsg("Entering WeMo polling loop")
     try:
         while True:
             # Allow time for a ctrl-c to stop the process
             p.poll(100)
             time.sleep(0.1)
+
 
     except Exception, e:
         Log.printMsg("ERROR: critical exception occurred: " + str(e))
@@ -138,5 +236,6 @@ if __name__ == "__main__":
         Log.printMsg("ERROR: an unhandled exception occurred: " + str(ex))
 
     finally:
-        Log.printMsg("Stopping wemo server")
+        Log.printMsg("** STOPPING WEMO SERVER ***")
         Log.closeLogFile()
+
