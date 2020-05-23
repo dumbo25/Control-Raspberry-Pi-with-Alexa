@@ -7,11 +7,11 @@ After=meadiacenter.service
 User=root
 Group=root
 Type=simple
-ExecStart=/usr/bin/python /home/pi/rpi-echo/rpi-echo.py
+ExecStart=/usr/bin/python /usr/local/bin/rpi-echo.py
 # write to journal or within script to separate log file
 # StandardOutput=/home/osmc/run-fan.log
 # StandardError=/home/osmc/run-fan.log
-Restart=Always
+Restart=always
 
 [Install]
 WantedBy=multi-user.target
