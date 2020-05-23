@@ -27,7 +27,8 @@ class mylog:
     def __init__(self, path, logfile):
         self.Path = path
         self.LogFile = self.Path + "/" + logfile
-        self.LogFileObject = open(self.LogFile, 'w+')
+        # changing to append so it can be added to action scripts
+        self.LogFileObject = open(self.LogFile, 'a+')
         self.Debug = False
 
     def closeLogFile(self):
