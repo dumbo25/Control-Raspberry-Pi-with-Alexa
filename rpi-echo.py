@@ -2,55 +2,6 @@
 
 #########################
 #
-# Python script using fauxmo to control Raspberry Pi
-#
-# To Do List:
-#   - add to systemd
-#   - add as an optional step to raspbian setup
-#   - create script to autodeploy
-#   - add scripts to github
-#   - update to python3
-#   - do something useful
-#
-# The scripts here are based on this Instructable
-#   https://www.instructables.com/id/Control-Raspberry-Pi-GPIO-Using-Amazon-Echo-Fauxmo/
-#
-#########################
-
-#########################
-#
-# To run the script:
-#    $ python rpi-echo.py
-#
-# Once the script is running, say to Amazon Alexa: Alexa, discover devices
-# wait 20 seconds or so
-#
-# Delete discovered devices from Alexa app on smartphone
-# Add new commands in two places below
-# Each command needs its own port
-#
-#########################
-
-#########################
-import mylog
-global Log
-Log = mylog.mylog('/home/pi/rpi-echo', 'rpi-echo.log')
-mylog.setLogObject(Log)
-
-import fauxmo
-import time
-import datetime
-import subprocess
-
-#########################
-Log.setDebug(True)
-
-
-def getLogHandler():
-#!/usr/bin/env python
-
-#########################
-#
 # Python script using Amazon Alexa or Echo to control Raspberry Pi using an older version 
 # fauxmo. It only supports one device and two commands.
 #
